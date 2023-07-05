@@ -36,11 +36,13 @@ join album on track.album_id = album.id
 group by album.id;
 
 -- Все исполнители, которые не выпустили альбомы в 2020 году
-select performer.name from performer
-join performeralbum on performer.id  = performeralbum.performer_id
-join album on album.id = performeralbum.album_id
-where release_date != 2020
-group by performer.name;
+select name from performer
+where name not in (
+	select performer.name from performer
+	join performeralbum on performer.id = performeralbum.performer_id
+	join album on album.id = performeralbum.album_id
+	where album.release_date = 2020
+);
 
 -- Названия сборников, в которых присутствует конкретный исполнитель (Arda)
 select collection.name from collection
@@ -53,13 +55,13 @@ where performer.name = 'Arda'
 group by collection.name;
 
 -- Названия альбомов, в которых присутствуют исполнители более чем одного жанра
-select album.name from album
+select distinct album.name from album
 join performeralbum on album.id = performeralbum.album_id
 join performer on performer.id = performeralbum.performer_id
 join genreperformer on performer.id = genreperformer.performer_id
-join genre on genre.id = genreperformer.genre_id 
-group by album.name
-having count(genre.name) > 1;
+join genre on genre.id = genreperformer.genre_id
+group by album.name, performer.id
+having count(genre.id) > 1;
 
 -- Наименования треков, которые не входят в сборники
 select track.name from track
